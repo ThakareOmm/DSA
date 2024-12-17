@@ -1,0 +1,200 @@
+Assignment 1-Searching and Sorting
+AIM: To implement various searching and sorting algorithms on database of students implemented using array of structure.
+
+#include <iostream>
+#include <string>
+#include <algorithm>
+using namespace std;
+
+class Student {
+    int rollNo;
+    string name;
+    float sgpa;
+
+public:
+    Student() { 
+        rollNo=0;
+        name="";
+        sgpa=0.0; 
+    }
+    Student(int r, string n, float s) {
+        rollNo=r;
+        name=n;
+        sgpa=s;
+    } 
+
+    int getRollNo() const { return rollNo; }
+    string getName() const { return name; }
+    float getSGPA() const { return sgpa; }
+
+    static void bubbleSort(Student students[], int n);
+    static void insertionSort(Student students[], int n);
+    static int partition(Student students[], int low, int high);
+    static void quickSort(Student students[], int low, int high);
+    static void displayTop10(Student students[], int n);
+    static void searchBySGPA(Student students[], int n, float targetSGPA);
+    static void binarySearchByName(Student students[], int n, string targetName);
+    static void displayAll(Student students[], int n);
+};
+
+void Student::bubbleSort(Student students[], int n) {
+    for (int i = 0; i < n - 1; i++) {
+        for (int j = 0; j < n - i - 1; j++) {
+            if (students[j].rollNo > students[j + 1].rollNo) {
+                swap(students[j], students[j + 1]);
+            }
+        }
+    }
+}
+
+void Student::insertionSort(Student students[], int n) {
+    for (int i = 1; i < n; i++) {
+        Student key = students[i];
+        int j = i - 1;
+        while (j >= 0 && students[j].name > key.name) {
+            students[j + 1] = students[j];
+            j--;
+        }
+        students[j + 1] = key;
+    }
+}
+
+int Student::partition(Student students[], int low, int high) {
+    float pivot = students[high].sgpa;
+    int i = low - 1;
+    for (int j = low; j < high; j++) {
+        if (students[j].sgpa >= pivot) {
+            i++;
+            swap(students[i], students[j]);
+        }
+    }
+    swap(students[i + 1], students[high]);
+    return i + 1;
+}
+
+void Student::quickSort(Student students[], int low, int high) {
+    if (low < high) {
+        int pi = partition(students, low, high);
+        quickSort(students, low, pi - 1);
+        quickSort(students, pi + 1, high);
+    }
+}
+
+void Student::displayTop10(Student students[], int n) {
+    quickSort(students, 0, n - 1);
+    int limit = min(n, 10);
+    cout << "Top " << limit << " Toppers:" << endl;
+    for (int i = 0; i < limit; i++) {
+        cout << students[i].rollNo << "\t" << students[i].name << "\t" << students[i].sgpa << endl;
+    }
+}
+
+void Student::searchBySGPA(Student students[], int n, float targetSGPA) {
+    bool found = false;
+    cout << "Students with SGPA " << targetSGPA << ":" << endl;
+    for (int i = 0; i < n; i++) {
+        if (students[i].sgpa == targetSGPA) {
+            cout << students[i].rollNo << "\t" << students[i].name << "\t" << students[i].sgpa << endl;
+            found = true;
+        }
+    }
+    if (!found) {
+        cout << "No student with SGPA " << targetSGPA <<" found." << endl;
+    }
+}
+
+void Student::binarySearchByName(Student students[], int n, string targetName) {
+    insertionSort(students, n);
+    int left = 0, right = n - 1;
+    bool found = false;
+    cout << "Students with name " << targetName << ":" << endl;
+    while (left <= right) {
+        int mid = left + (right - left) / 2;
+        if (students[mid].name == targetName) {
+            cout << "Roll No: " << students[mid].rollNo << ", Name: " << students[mid].name << ", SGPA: " << students[mid].sgpa << endl;
+            found = true;
+            int temp = mid - 1;
+            while (temp >= 0 && students[temp].name == targetName) {
+                cout << "Roll No: " << students[temp].rollNo << ", Name: " << students[temp].name << ", SGPA: " << students[temp].sgpa << endl;
+                temp--;
+            }
+            temp = mid + 1;
+            while (temp < n && students[temp].name == targetName) {
+                cout << "Roll No: " << students[temp].rollNo << ", Name: " << students[temp].name << ", SGPA: " << students[temp].sgpa << endl;
+                temp++;
+            }
+            break;
+        }
+        if (students[mid].name < targetName)
+            left = mid + 1;
+        else
+            right = mid - 1;
+    }
+    if (!found) cout << "No student with name " << targetName << " found." << endl;
+}
+
+void Student::displayAll(Student students[], int n) {
+    for (int i = 0; i < n; i++) {
+        cout << "Roll No: " << students[i].rollNo << ", Name: " << students[i].name << ", SGPA: " << students[i].sgpa << endl;
+    }
+}
+
+int main() {
+    int n = 15;
+    Student students[15] = {
+        Student(1, "Shreyash", 8.5), Student(2, "Rajat", 9.1), Student(3, "Satwik", 7.9),
+        Student(4, "Raj", 8.0), Student(5, "Aryan", 8.8), Student(6, "Tejas", 9.5),
+        Student(7, "Nishant", 8.2), Student(8, "Sumit", 7.7), Student(9, "Abhijit", 8.6),
+        Student(10, "Prathamesh", 9.0), Student(11, "Palash", 7.5), Student(12, "Oweis", 9.3),
+        Student(13, "Sarthak", 7.8), Student(14, "Swaraj", 8.4), Student(15, "Ayush", 8.9)
+    };
+
+    int choice;
+    string targetName;
+    do {
+        cout << "1. Roll Call List (sorted by roll number)" << endl;
+        cout << "2. List students alphabetically by name" << endl;
+        cout << "3. Display Top 10 students by SGPA" << endl;
+        cout << "4. Search students by SGPA" << endl;
+        cout << "5. Search a student by name" << endl;
+        cout << "6. Display all students" << endl;
+        cout << "7. Exit" << endl;
+        cout << "Enter your choice: ";
+        cin >> choice;
+
+        switch (choice) {
+            case 1:
+                Student::bubbleSort(students, n);
+                Student::displayAll(students, n);
+                break;
+            case 2:
+                Student::insertionSort(students, n);
+                Student::displayAll(students, n);
+                break;
+            case 3:
+                Student::displayTop10(students, n);
+                break;
+            case 4:
+                float targetSGPA;
+                cout << "Enter SGPA to search: ";
+                cin >> targetSGPA;
+                Student::searchBySGPA(students, n, targetSGPA);
+                break;
+            case 5:
+                cout << "Enter name to search: ";
+                cin >> targetName;
+                Student::binarySearchByName(students, n, targetName);
+                break;
+            case 6:
+                Student::displayAll(students, n);
+                break;
+            case 7:
+                cout << "Exiting..." << endl;
+                break;
+            default:
+                cout << "Invalid choice. Please try again." << endl;
+        }
+    } while (choice != 7);
+
+    return 0;
+}
