@@ -1,0 +1,237 @@
+Assignment 2 -Implementation of Stack
+AIM: Implementation of Stack ADT and expression conversion
+
+#include <iostream>
+#include <string>
+#include <algorithm>
+using namespace std;
+struct Node{
+    char data;
+    struct Node * next ;
+    Node(char val){
+        data = val;
+        next = NULL;
+    }
+};
+class stack{
+    private :
+    Node * head;
+    public :
+    stack(){
+        head=NULL;
+    }
+    void push(char val);
+    char pop();
+    void display();
+    int prec(char c);
+    char top();
+    string prefix(string s); 
+    string postfix(string s); 
+    int prefixeval(string s);
+    int postfixeval(string s);
+    bool empty();
+};
+int stack :: prec(char c){
+    if(c == '^'){
+        return 3; 
+    }else if(c == '/' || c == '*'){
+        return 2; 
+    }else if(c == '+' || c == '-'){
+        return 1;
+    }else{
+        return -1;
+    }
+}
+char stack :: top(){
+    if(head==NULL)
+    return ' ';
+    return head->data;
+}
+void stack :: push(char val){
+    Node *node = new Node(val); 
+    node->next=head;
+    head=node;
+
+}
+char stack :: pop(){
+    if(head==NULL){
+        cout<<"Stack empty"<<endl;
+        return ' ';
+    } 
+    char c = head->data;
+    head=head->next; 
+    return c;
+}
+void stack :: display(){
+    Node * temp = head;
+    if(head==NULL){
+        cout<<"Stack empty"<<endl;
+        return;
+    } 
+    while(temp!=NULL){
+        cout<<temp->data<<endl;
+        temp=temp->next;
+    } 
+    cout<<endl;
+}
+bool stack :: empty(){
+    return head==NULL;
+}
+string stack :: prefix(string s){
+    string result;
+    reverse(s.begin(),s.end());
+    stack st;
+    for(int i =0 ; i<s.length();i++){
+        if(s[i]>='a' && s[i]<='z' || s[i]>='A' && s[i]<='Z'){
+            result= result+s[i];
+        }else if(s[i]==')'){
+            st.push(s[i]);
+        }else if(s[i]=='('){
+            while(!st.empty() && st.top()!= ')'){
+                result = result + st.top();
+                st.pop();
+            }
+            if(!st.empty() ){
+                st.pop();
+            }
+        }
+        else{
+            while(!st.empty() && prec(st.top())>=prec(s[i])){
+                result = result + st.top();
+                st.pop();
+            }
+            st.push(s[i]); 
+        }
+        
+    }
+    while(!st.empty()){
+        result = result + st.top();
+        st.pop();
+    }
+    reverse(result.begin(),result.end());
+    return result;
+}
+
+string stack :: postfix(string s){
+    string result; 
+    stack st;
+    for(int i =0 ; i<s.length();i++){
+        if(s[i]>='a' && s[i]<='z' || s[i]>='A' && s[i]<='Z'){
+            result= result+s[i];
+        }else if(s[i]=='('){
+            st.push(s[i]);
+        }else if(s[i]==')'){
+            while(!st.empty() && st.top()!= '('){
+                result = result + st.top();
+                st.pop();
+            }
+            if(!st.empty() ){
+                st.pop();
+            }
+        }
+        else{
+            while(!st.empty() && prec(st.top())>=prec(s[i])){
+                result = result + st.top();
+                st.pop();
+            }
+            st.push(s[i]); 
+        }
+        
+    }
+    while(!st.empty()){
+        result = result + st.top();
+        st.pop();
+    } 
+    return result;
+}
+int stack :: prefixeval(string s){
+    stack st; 
+
+    for(int i = s.length()-1;i>=0;i--){
+        if(s[i]>='0' && s[i]<='9'){
+            st.push(s[i]-'0');
+        }else{
+            int num1=st.top();
+            st.pop();
+            int num2=st.top();
+            st.pop();
+            switch(s[i]){
+                case '+': st.push(num1+num2);
+                break;
+                case '-': st.push(num1-num2);
+                break;
+                case '*': st.push(num1*num2);
+                break;
+                case '/': st.push(num1/num2);
+                break;
+                case '^': st.push(pow(num1,num2));
+                break;
+
+            }
+        }
+    }
+    return st.top();
+}
+int stack :: postfixeval(string s){
+    stack st; 
+
+    for(int i = 0;i<s.length();i++){
+        if(s[i]>='0' && s[i]<='9'){
+            st.push(s[i]-'0');
+        }else{
+            int num1=st.top();
+            st.pop();
+            int num2=st.top();
+            st.pop();
+            switch(s[i]){
+                case '+': st.push(num1+num2);
+                break;
+                case '-': st.push(num1-num2);
+                break;
+                case '*': st.push(num1*num2);
+                break;
+                case '/': st.push(num2/num1);
+                break;
+                case '^': st.push(pow(num1,num2));
+                break;
+
+            }
+        }
+    }
+    return st.top();
+}
+int main()
+{
+    stack st;
+    string str1,str2,str3;
+    cout<<"Enter Expression"<<endl;
+    cin>>str1;   
+    cout<<"Prefix : "<<st.prefix(str1)<<endl; 
+    cout<<"Postfix : "<<st.postfix(str1)<<endl;
+
+    cout<<"Enter Prefix Expression for Evaluation"<<endl;
+    cin>>str2;
+    cout<<"Evaluation of Prefix : "<<st.prefixeval(str2)<<endl;
+
+    cout<<"Enter Postfix Expression for Evaluation"<<endl;
+    cin>>str3;
+    cout<<"Evaluation of Postfix : "<<st.postfixeval(str3)<<endl;
+  
+    return 0;
+}
+
+
+//OUTPUT:
+
+Enter Expression
+a+b*(c^d-e)^(f+g*h)-i
+Prefix : -+a*b^-^cde+f*ghi
+Postfix : abcd^e-fgh*+^*+i-
+
+Enter Prefix Expression for Evaluation
+*-+935/4
+Evaluation of Prefix : 14
+
+Enter Postfix Expression for Evaluation
+93+54/*
+Evaluation of Postfix : 14
